@@ -1,6 +1,7 @@
-import React, { useContext, useRef, useEffect, useState } from "react";
+import React, { useContext, useRef, useEffect } from "react";
 import { AuthContext } from "../context/authContext";
 import { ChatContext } from "../context/chatContext";
+import { FaFile } from "react-icons/fa"; // Import a file icon for documents
 
 const Message = ({ message }) => {
   const { currentUser } = useContext(AuthContext);
@@ -13,12 +14,12 @@ const Message = ({ message }) => {
   }, [message]);
 
   const getMessageSentTime = (timestamp) => {
-    const date = timestamp.toDate(); // Convert Firestore Timestamp to JavaScript Date
+    const date = timestamp.toDate();
     const options = { hour: "numeric", minute: "numeric", hour12: true };
     return date.toLocaleString("en-US", options);
   };
 
-  if (!message.text && !message.img) {
+  if (!message.text && !message.img && !message.attachment) {
     return null;
   }
 
@@ -35,20 +36,29 @@ const Message = ({ message }) => {
               : data.user.photoURL
           }
           alt=""
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
         />
-        <span>{getMessageSentTime(message.date)}</span>{" "}
-        {/* Display formatted message time */}
+        <span>{getMessageSentTime(message.date)}</span>
       </div>
-      <div className="messageContent ">
-        {message.text && <p className="p">{message.text}</p>}
-        {message.img && (
-          <img src={message.img} alt="" style={{ width: "50%" }} />
+      <div className="messageContent" style={{ marginTop: "10px" }}>
+        {message.text && <p>{message.text}</p>}
+        {message.img && <img src={message.img} alt="" />}
+        {message.attachment && (
+          <div className="attachment">
+            {message.attachment.includes(".jpg") ||
+            message.attachment.includes(".jpeg") ||
+            message.attachment.includes(".png") ||
+            message.attachment.includes(".gif") ? (
+              <img src={message.attachment} alt="" />
+            ) : (
+              <a href={message.attachment} target="_blank" rel="noreferrer">
+                <FaFile />
+                {`Attachment (${message.attachment
+                  .split(".")
+                  .pop()
+                  .toUpperCase()})`}
+              </a>
+            )}
+          </div>
         )}
       </div>
     </div>

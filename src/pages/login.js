@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "../style.css";
-import { signInWithEmailAndPassword} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-
 
 const Login = () => {
   const [err, setErr] = useState(null);
@@ -35,24 +33,29 @@ const Login = () => {
         <span className="logo">Chat App</span>
         <span className="title">Login</span>
         <form onSubmit={handleSubmit} className="form">
-          <input className="input" type="email" placeholder="Email" required />
+          <input type="email" placeholder="Email" required />
           <br></br>
-          <input className="input" type="password" placeholder="Password" required />
+          <input type="password" placeholder="Password" required />
           <br></br>
-          <button className="button">Sign in</button>
+          <button>Sign in</button>
           {err && <span style={{ color: "red" }}>{err}</span>}
         </form>
-        <p className="paragraph">You don't have an account?<Link to="/register">Register</Link></p>
-      <div className="defaultlogin">
+        <p>
+          You don't have an account?<Link to="/register">Register</Link>
+        </p>
+        <div className="defaultlogin">
           <h6>Sample Login Details</h6>
-          <b><span>Email:</span></b>
-          <span> user123@gmail.com</span><br/>
-          <b><span>Password:</span></b>
+          <b>
+            <span>Email:</span>
+          </b>
+          <span> user123@gmail.com</span>
+          <br />
+          <b>
+            <span>Password:</span>
+          </b>
           <span> 123456</span>
         </div>
-
       </div>
-
     </div>
   );
 };

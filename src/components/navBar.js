@@ -4,23 +4,15 @@ import { auth } from "../firebase";
 import { AuthContext } from "../context/authContext";
 
 function NavBar() {
-  const {currentUser} = useContext(AuthContext);
- 
+  const { currentUser } = useContext(AuthContext);
 
   return (
     <div className="navbar">
-      <span className="logo1">
-        Chat App
-      </span>
+      <span className="logo">Chat App</span>
       <div className="user">
-        <img src={currentUser.photoURL} alt="User" className="img" />
+        <img src={currentUser.photoURL} alt="User" />
         <span>{currentUser.displayName}</span>
-        <button
-          onClick={()=>signOut(auth)}
-          className="button1"
-        >
-          Log out
-        </button>
+        <button onClick={() => signOut(auth)}>Log out</button>
       </div>
     </div>
   );
