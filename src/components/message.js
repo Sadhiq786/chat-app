@@ -1,7 +1,7 @@
 import React, { useContext, useRef, useEffect } from "react";
 import { AuthContext } from "../context/authContext";
 import { ChatContext } from "../context/chatContext";
-import { FaFile } from "react-icons/fa"; // Import a file icon for documents
+import { FaFile } from "react-icons/fa";
 
 const Message = ({ message }) => {
   const { currentUser } = useContext(AuthContext);
@@ -19,9 +19,13 @@ const Message = ({ message }) => {
     return date.toLocaleString("en-US", options);
   };
 
-  if (!message.text && !message.img && !message.attachment) {
-    return null;
-  }
+  // Determine the message type
+  const messageType = () => {
+    if (message.text) return "text";
+    if (message.img) return "image";
+    if (message.attachment) return "attachment";
+    return "text"; // Default to text if no recognizable type
+  };
 
   return (
     <div
@@ -39,25 +43,15 @@ const Message = ({ message }) => {
         />
         <span>{getMessageSentTime(message.date)}</span>
       </div>
-      <div className="messageContent" style={{ marginTop: "10px" }}>
-        {message.text && <p>{message.text}</p>}
-        {message.img && <img src={message.img} alt="" />}
-        {message.attachment && (
+      <div className="messageContent">
+        {messageType() === "text" && <p>{message.text}</p>}
+        {messageType() === "image" && <img src={message.img} alt="Image" />}
+        {messageType() === "attachment" && (
           <div className="attachment">
-            {message.attachment.includes(".jpg") ||
-            message.attachment.includes(".jpeg") ||
-            message.attachment.includes(".png") ||
-            message.attachment.includes(".gif") ? (
-              <img src={message.attachment} alt="" />
-            ) : (
-              <a href={message.attachment} target="_blank" rel="noreferrer">
-                <FaFile />
-                {`Attachment (${message.attachment
-                  .split(".")
-                  .pop()
-                  .toUpperCase()})`}
-              </a>
-            )}
+            <FaFile />
+            <a href={message.attachment} target="_blank" rel="noopener noreferrer">
+              View File
+            </a>
           </div>
         )}
       </div>

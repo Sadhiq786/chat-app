@@ -3,11 +3,13 @@
     @content;
   }
 }
+
 @mixin tablet {
   @media screen and (max-width: 768px) {
     @content;
   }
 }
+
 @mixin laptop {
   @media screen and (max-width: 1200px) {
     @content;
@@ -15,7 +17,7 @@
 }
 
 .formContainer {
-  background-image: url(../src/img/R.jpeg);
+  background-image: url(../src/img/signin.jpg);
   background-repeat: no-repeat;
   background-size: cover;
   height: 100vh;
@@ -31,9 +33,7 @@
     flex-direction: column;
     gap: 10px;
     align-items: center;
-    // border:2px solid red;
-    width:28%;
-
+    width: 28%;
 
     span {
       text-align: center;
@@ -56,6 +56,7 @@
         padding: 10px;
         border: none;
         border-bottom: 1px solid lightblue;
+
         &::placeholder {
           color: rgb(175, 175, 175);
         }
@@ -95,9 +96,8 @@
       margin-top: 10px;
     }
   }
-  
 
-  @include tablet() {
+  @include tablet {
     .formWrapper {
       padding: 20px 30px;
     }
@@ -122,22 +122,19 @@
     }
   }
 }
-// //homepage styles:
+
 .home {
-  background-image: url(../src/img/home.jpeg);
-  background-color: #a7bcff;
+  background-image: url(../src/img/Blue-Backgrounds-HD.jpg);
   height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 
   .container {
-    // border: 1px solid white;
-    border-radius: 10px;
-    width: 82%;
+    width: 75%;
     height: 90%;
     display: flex;
-    overflow: hidden;         
+    overflow: hidden;
 
     @include tablet {
       width: 90%;
@@ -146,22 +143,26 @@
 
     .sidebar {
       flex: 1;
-      background-color: #3e3c61;
+      background-color: white;
+      border-right: 0.1px solid white;
       margin-left: -12px;
       position: relative;
 
       .navbar {
-        // position: fixed;
         display: flex;
         align-items: center;
-        background-color: #2f2d52;
+        // background-color: rgb(172, 178, 178);
+        background-color: #128c7e;
+
+        border-right: 0.1px solid white;
         height: 50px;
         padding: 10px;
         justify-content: space-between;
-        color: #ddddf7;
+        color:black;
 
         .logo {
           font-weight: bold;
+
           @include tablet {
             display: none;
           }
@@ -180,8 +181,8 @@
           }
 
           button {
-            background-color: #5d5b8d;
-            color: #ddddf7;
+            background-color:white;
+            color:black;
             padding: 0px 10px 0px 10px;
             font-size: 15px;
             border: none;
@@ -189,8 +190,10 @@
           }
         }
       }
+
       .search {
-        border-bottom: 1px solid gray;
+        border-bottom: 1px solid rgba(219, 210, 210, 0.722);
+        background-color: rgba(211, 207, 219, 0.762);
         cursor: pointer;
 
         .searchForm {
@@ -198,6 +201,7 @@
           position: relative;
           display: flex;
           align-items: center;
+
           .span {
             color: aliceblue;
           }
@@ -205,7 +209,7 @@
           input {
             background-color: transparent;
             border: none;
-            color: white;
+            color: black;
             outline: none;
             flex: 1;
             border-radius: 8px;
@@ -214,7 +218,7 @@
             text-align: center;
 
             &::placeholder {
-              color: lightgray;
+              color: black;
             }
           }
         }
@@ -222,7 +226,7 @@
 
       .chats {
         overflow-y: auto;
-        max-height: calc(99% - 100px); /* Set max-height to limit height */
+        max-height: calc(99% - 100px);
 
         &:hover {
           overflow-y: auto;
@@ -234,14 +238,13 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        color: white;
+        color: black;
         cursor: pointer;
-        border-bottom: 1px solid rgb(75, 70, 97);
         height: 80px;
         width: auto;
 
         &:hover {
-          background-color: #2f2d52;
+          background-color:skyblue;
         }
 
         img {
@@ -268,7 +271,7 @@
 
           p {
             font-size: 15px;
-            color: lightgray;
+            color: black;
             text-overflow: ellipsis;
             white-space: nowrap;
             overflow: hidden;
@@ -278,7 +281,6 @@
       }
     }
 
-    //right side
     .chat {
       flex: 2;
       margin-left: -12px;
@@ -286,31 +288,34 @@
       .chatInfo {
         height: 50px;
         width: 100%;
-        background-color: #5d5b8d;
+        background-color: #128c7e;
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 19px;
         font-weight: bold;
-        color: lightgray;
+        color: black;
 
         img {
           width: 30px;
           height: 30px;
           border-radius: 50%;
           object-fit: cover;
-          // margin-left: 15px;
         }
       }
 
       .chatIcon {
         display: flex;
         gap: 15px;
+        justify-content: center;
+        align-items: center;
       }
 
       .chatIcons {
         display: flex;
         gap: 15px;
+        justify-content: center;
+        align-items: center;
 
         img {
           height: 25px;
@@ -325,10 +330,10 @@
       }
 
       .messages {
-        background-color: #ddddf7;
+        background-color: #F5F5F5;
         padding: 19px;
         height: calc(100% - 100px);
-        overflow: scroll;
+        overflow-y: scroll;
 
         .message {
           display: flex;
@@ -348,6 +353,7 @@
               object-fit: cover;
             }
           }
+
           .messageContent {
             max-width: 80%;
             display: flex;
@@ -372,8 +378,9 @@
 
             .messageContent {
               align-items: flex-end;
+
               p {
-                background-color: #8da4f1;
+                background-color:#128c7e;
                 color: white;
                 border-radius: 10px 0px 20px 10px;
               }
@@ -390,122 +397,207 @@
         align-items: center;
         justify-content: space-between;
         word-break: break-all;
-
+      
+        .preview {
+          width: 50px;
+          height: 60px;
+          position: relative;
+      
+          img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+          }
+      
+          p {
+            word-break: break-all;
+          }
+        }
+      
         input {
-          // width: 100%;
-          flex:1;
+          flex: 1;
           border: none;
           outline: none;
           color: #2f2d52;
           font-size: 18px;
-
+          padding-left: 30px;
+      
           &::placeholder {
-            color: lightgray;
+            color: lightblack;
           }
         }
-
+      
         .send {
           display: flex;
           align-items: center;
           text-align: center;
-          gap: 15px;          
+          gap: 15px;
+      
           img {
-          height: 24px;
-          cursor: pointer;
+            height: 24px;
+            cursor: pointer;
+          }
+      
+          button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+      
+            &:disabled {
+              background-color: #ccc;
+              cursor: not-allowed;
+            }
           }
         }
+      
+        .error {
+          color: red;
+          margin-top: 10px;
+          text-align: center;
+        }
+      }
+      
+    }
+
+    @media screen and (max-width: 527px) {
+      .container {
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        margin-left: 28px;
+        padding-top: 70px;
+      }
+
+      .chatIcon {
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+        margin-top: 20px;
+      }
+
+      .chatIcons {
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+      }
+
+      .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: #333;
+        padding: 10px;
+        z-index: 1000;
+
+        img {
+          display: none;
+        }
+      }
+
+      .search {
+        width: 100%;
+        height: 53%;
+        padding: 10px;
+        margin-top: 30px;
+      }
+
+      .chat {
+        width: 100%;
+        height: 20%;
+        background-color: #f0f0f0;
+        padding: 20px;
+      }
+
+      .chats {
+        width: 100%;
+        overflow: scroll;
+        height: 55px;
+      }
+
+      .messages {
+        width: 100%;
+        overflow: scroll;
+        height: 50%;
+        padding-top: 20px;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+
+      .chat {
+        width: 100%;
+        overflow: scroll;
+      }
+
+      .chats {
+        width: 100%;
+        overflow: scroll;
+        height: 55px;
+      }
+
+      .chatInfo {
+        width: 100%;
+      }
+
+      .message {
+        width: 100%;
+        overflow: scroll;
+        height: 50%;
+        padding-top: 20px;
+      }
     }
   }
 }
+.lastMessageImage {
+  max-width: 50px; /* Adjust the size as needed */
+  max-height: 50px; /* Adjust the size as needed */
+  border-radius: 5px; /* Optional: for rounded corners */
+}
 
-  @media screen and (max-width: 527px) {
-    .container {
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-      margin-left: 28px;
-      padding-top: 70px;
-    }
-    .chatIcon {
-      display: flex;
-      flex-direction: row;
-      justify-content: left;
-      margin-top: 20px;
-      
-    }
-    .chatIcons {
-      display: flex;
-      flex-direction: row;
-      justify-content: left;
-      
-    }
 
-    .navbar {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background-color: #333;
-      padding: 10px;
-      z-index: 1000;
+.preview {
+  margin-bottom: 10px;
+  text-align: center;
 
-      img{
-        display: none;
-      }
+  img {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin-top: 10px;
   }
 
-  .search {
-      width: 100%;
-      height: 53%;
-      padding: 10px;
-      margin-top: 30px;
+  p {
+    color: #5d5d5d;
+    font-size: 14px;
+    margin-top: 10px;
+    word-wrap: break-word;
   }
 
-  
-  .chat {
-      width: 100%;
-      height: 20%;
-      background-color: #f0f0f0;
-      padding: 20px;
-     
+  @include tablet {
+    img {
+      max-width: 80%;
+      max-height: 150px;
+    }
+
+    p {
+      font-size: 13px;
+    }
   }
 
-  .chats {
-      width: 100%;
-      overflow: scroll;
-      height: 55px;
-  }
-  
-  .messages {
-      width: 100%;
-      overflow: scroll;
-      height: 50%;
-      padding-top: 20px;
-  }
-
-    .sidebar {
-      width: 100%;
+  @include mobile {
+    img {
+      max-width: 70%;
+      max-height: 100px;
     }
 
-    .chat {
-      width: 100%;
-      overflow: scroll;
-    }
-
-    .chats {
-      width: 100%;
-      overflow: scroll;
-      height: 55px;
-    }
-
-    .chatInfo {
-      width: 100%;
-    }
-
-    .message {
-      width: 100%;
-      overflow: scroll;
-      height: 50%;
-      padding-top: 20px;
+    p {
+      font-size: 12px;
     }
   }
 }

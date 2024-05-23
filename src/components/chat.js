@@ -6,22 +6,39 @@ import Messages from "./messages";
 import Input from "./input";
 import { ChatContext } from "../context/chatContext";
 import { Dropdown } from "react-bootstrap";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteField, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import { AuthContext } from "../context/authContext"; // Import AuthContext to get currentUser
+
 
 const Chat = () => {
   const { data } = useContext(ChatContext);
+  const { currentUser } = useContext(AuthContext); // Get currentUser from AuthContext
+
   const handleClearChat = async () => {
     console.log("delete");
     try {
+      // Clear all messages for this chat
       await updateDoc(doc(db, "chats", data.chatId), {
-        messages: [], // Clear all messages for this chat
+        messages: [],
       });
+
+      // Update the user chat documents to remove the last message
+      await updateDoc(doc(db, "userChats", data.user.uid), {
+        [`${data.chatId}.lastMessage`]: deleteField(),
+        [`${data.chatId}.date`]: serverTimestamp(),
+      });
+      await updateDoc(doc(db, "userChats", currentUser.uid), {
+        [`${data.chatId}.lastMessage`]: deleteField(),
+        [`${data.chatId}.date`]: serverTimestamp(),
+      });
+
       console.log("Chat cleared successfully!");
     } catch (error) {
       console.error("Error clearing chat:", error);
     }
   };
+
   return (
     <div className="chat">
       <div className="chatInfo">
@@ -34,7 +51,6 @@ const Chat = () => {
         <div className="chatIcons">
           <img src={Cam} alt="" />
           <img src={Add} alt="" />
-          {/* <img src={More} alt=''/> */}
           <Dropdown data-bs-theme="dark">
             <Dropdown.Toggle variant="secondary" id="dropdown-basic">
               <img src={More} alt="" />

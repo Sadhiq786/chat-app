@@ -18,13 +18,13 @@ const SearchBar = () => {
   const [username, setUsername] = useState("");
   const [user, setUser] = useState(null);
   const [err, setErr] = useState(false);
-  const [isInputFocused, setIsInputFocused] = useState(false); // State to track input focus
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const { currentUser } = useContext(AuthContext);
 
   const handleSearch = async () => {
     if (!username) {
-      setErr(true); // Set error state to true
-      return; // Exit the function early
+      setErr(true);
+      return;
     }
 
     const lowercaseUsername = username.toLowerCase();
@@ -37,7 +37,6 @@ const SearchBar = () => {
     try {
       const querySnapshot = await getDocs(q);
       if (querySnapshot.empty) {
-        // Username not found in Firestore
         setErr(true);
         setUser(null);
       } else {
@@ -53,22 +52,17 @@ const SearchBar = () => {
 
   const handleKey = (e) => {
     if (e.code === "Enter") {
-      if (!username) {
-        setErr(true);
-      } else {
-        handleSearch();
-      }
+      handleSearch();
     }
   };
 
   const handleSelect = async () => {
     if (err) {
       setErr(false);
-      setUsername(""); // Clear the username input field
+      setUsername("");
     }
-    setIsInputFocused(!err); // Toggle the input focus state
+    setIsInputFocused(!err);
 
-    // Add your logic here for handling the selection
     if (user && user.uid) {
       const combinedId =
         currentUser.uid > user.uid
@@ -105,14 +99,9 @@ const SearchBar = () => {
         setErr(true);
         console.error("Error initiating the chat:", error);
       } finally {
-        // Reset user state and input value after selection
         setUser(null);
         setUsername("");
       }
-    } else {
-      console.error(
-        "No user selected or user object does not have UID property."
-      );
     }
   };
 

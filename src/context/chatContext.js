@@ -2,13 +2,15 @@ import { createContext, useContext, useReducer } from "react";
 import { AuthContext } from "./authContext";
 
 export const ChatContext = createContext();
+
 export const ChatContextProvider = ({ children }) => {
   const { currentUser } = useContext(AuthContext);
 
   const INITIAL_STATE = {
-    chatid: "null",
+    chatId: "null",
     user: {},
   };
+
   const chatReducer = (state, action) => {
     switch (action.type) {
       case "CHANGE_USER":
@@ -19,7 +21,8 @@ export const ChatContextProvider = ({ children }) => {
               ? currentUser.uid + action.payload.uid
               : action.payload.uid + currentUser.uid,
         };
-
+      case "DELETE_CHAT":
+        return INITIAL_STATE; // Clear chat ID and user data
       default:
         return state;
     }

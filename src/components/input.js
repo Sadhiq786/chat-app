@@ -3,185 +3,161 @@ import Img from "../img/img.png";
 import Attach from "../img/attach.png";
 import { AuthContext } from "../context/authContext";
 import { ChatContext } from "../context/chatContext";
-import {
-  Timestamp,
-  arrayUnion,
-  doc,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db, storage } from "../firebase";
 import { v4 as uuid } from "uuid";
+import { Timestamp, arrayUnion, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import InputEmoji from "react-input-emoji";
-import * as Icon from "react-bootstrap-icons";
 
-function Inputpanel() {
+const InputPanel = () => {
   const [text, setText] = useState("");
-  const [img, setImg] = useState(null); // State for image
-  const [attachment, setAttachment] = useState(null); // State for other attachments
-  const [isSending, setIsSending] = useState(false);
-
+  const [img, setImg] = useState(null);
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
   const { currentUser } = useContext(AuthContext);
   const { data } = useContext(ChatContext);
-
   const fileInputRef = useRef(null);
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-
-      // Check if text, img, or attachment is present
-      if (text.trim() || attachment || img) {
-        handleSend();
-      }
-    }
-  };
-
-  const handleAttachmentChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Check if the selected file is an image
-      if (file.type.startsWith("image/")) {
-        // If it's an image, set it to img state
-        setImg(file);
-        // Reset attachment state
-        setAttachment(null);
-      } else {
-        // If it's not an image, set it to attachment state
-        setAttachment(file);
-        // Reset img state
-        setImg(null);
-      }
-    }
-  };
-
-  const handleAttachClick = () => {
-    fileInputRef.current.click();
-  };
+  const attachmentInputRef = useRef(null);
 
   const handleSend = async () => {
-    if (isSending) return;
-
-    setIsSending(true);
-
-    if (!data.chatId) {
-      alert("Please select a user to send the message");
-      setIsSending(false);
+    if (!text.trim() && !img && !file) {
+      setError("Cannot send empty messages");
       return;
     }
 
-    try {
-      let attachmentURL = null;
-      if (attachment) {
-        attachmentURL = await uploadAttachment(attachment);
-      }
+    setError("");
+    const messageId = uuid();
+    const newMessage = {
+      id: messageId,
+      text,
+      senderId: currentUser.uid,
+      date: Timestamp.now(),
+    };
 
-      // Determine if attachment is an image
-      const isImage = img && img.type.startsWith("image/");
+    setUploading(true);
+    let uploadPromise = Promise.resolve();
 
-      await sendMessage({
-        text,
-        attachment: isImage ? null : attachmentURL,
-        img: isImage ? img : null,
-      });
-    } catch (error) {
-      console.error("Error sending message:", error);
-      alert("Error sending message. Please try again.");
-    } finally {
-      setIsSending(false);
-      setText("");
-      setAttachment(null);
-      setImg(null);
+    if (img) {
+      const storageRef = ref(storage, `images/${uuid()}`);
+      uploadPromise = uploadBytesResumable(storageRef, img).then(snapshot =>
+        getDownloadURL(snapshot.ref).then(downloadURL => {
+          newMessage.img = downloadURL;
+        })
+      );
+    } else if (file) {
+      const storageRef = ref(storage, `files/${uuid()}`);
+      uploadPromise = uploadBytesResumable(storageRef, file).then(snapshot =>
+        getDownloadURL(snapshot.ref).then(downloadURL => {
+          newMessage.attachment = downloadURL;
+        })
+      );
     }
-  };
 
-  const uploadAttachment = async (file) => {
     try {
-      const storageRef = ref(storage, uuid());
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      const snapshot = await uploadTask;
-
-      return getDownloadURL(snapshot.ref);
-    } catch (error) {
-      console.error("Error uploading attachment:", error);
-      throw error;
-    }
-  };
-
-  const sendMessage = async ({ text, attachment, img }) => {
-    try {
+      await uploadPromise;
       await updateDoc(doc(db, "chats", data.chatId), {
-        messages: arrayUnion({
-          id: uuid(),
-          text,
-          senderId: currentUser.uid,
-          date: Timestamp.now(),
-          attachment,
-          img: img ? URL.createObjectURL(img) : null, // Convert img to URL for preview
-        }),
+        messages: arrayUnion(newMessage),
       });
-      await updateLastMessage({ text });
-      console.log("Message sent successfully!");
+
+      const updateUserChat = async (userId) => {
+        await updateDoc(doc(db, "userChats", userId), {
+          [`${data.chatId}.lastMessage`]: { text: newMessage.text || "Attachment" },
+          [`${data.chatId}.date`]: serverTimestamp(),
+        });
+      };
+
+      await Promise.all([updateUserChat(currentUser.uid), updateUserChat(data.user.uid)]);
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Error sending message. Please try again.");
+    } finally {
+      setText("");
+      setImg(null);
+      setFile(null);
+      setUploading(false);
     }
   };
 
-  const updateLastMessage = async ({ text }) => {
-    try {
-      await updateDoc(doc(db, "userChats", currentUser.uid), {
-        [data.chatId + ".lastMessage"]: {
-          text,
-        },
-        [data.chatId + ".date"]: serverTimestamp(),
-      });
-      await updateDoc(doc(db, "userChats", data.user.uid), {
-        [data.chatId + ".lastMessage"]: {
-          text,
-        },
-        [data.chatId + ".date"]: serverTimestamp(),
-      });
-    } catch (error) {
-      console.error("Error updating last message:", error);
-      alert("Error updating last message. Please try again.");
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
+  };
+
+  const handleInputChange = (e) => {
+    setText(e.target.value);
+    if (error) setError("");
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFile(file);
+      setImg(null); // Ensure img is cleared when a file is selected
+    }
+    if (error) setError("");
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImg(file);
+      setFile(null); // Ensure file is cleared when an image is selected
+    }
+    if (error) setError("");
   };
 
   return (
     <div className="input">
-      <InputEmoji
+      {img && (
+        <div className="preview">
+          <img src={URL.createObjectURL(img)} alt="Image Preview" />
+        </div>
+      )}
+      {file && (
+        <div className="preview">
+          <p>{file.name}</p>
+        </div>
+      )}
+      <input
+        type="text"
+        placeholder="Type something..."
+        onChange={handleInputChange}
         value={text}
-        onChange={setText}
-        cleanOnEnter
-        placeholder="Type a message..."
         onKeyDown={handleKeyDown}
+        disabled={uploading}
       />
       <div className="send">
-        <img src={Attach} onClick={handleAttachClick} alt="Attach" />
         <input
           type="file"
-          style={{ display: "none" }}
-          id="file"
           ref={fileInputRef}
-          onChange={handleAttachmentChange}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+          disabled={uploading}
         />
-        <label htmlFor="file">
-          <img src={Img} alt="Upload" />
+        <input
+          type="file"
+          accept="image/*"
+          ref={attachmentInputRef}
+          style={{ display: "none" }}
+          onChange={handleImageChange}
+          disabled={uploading}
+        />
+        <label htmlFor="file" onClick={() => attachmentInputRef.current.click()}>
+          <img src={Img} alt="Upload Image" />
         </label>
-        <span>
-          <Icon.SendFill
-            onClick={handleSend}
-            disabled={isSending}
-            style={{ cursor: "pointer" }}
-            title="Send"
-          />
-        </span>
+        <label htmlFor="file" onClick={() => fileInputRef.current.click()}>
+          <img src={Attach} alt="Upload File" />
+        </label>
+        {(text.trim() || img || file) && (
+          <button onClick={handleSend} disabled={uploading}>
+            {uploading ? "Sending..." : "Send"}
+          </button>
+        )}
       </div>
+      {error && <div className="error">{error}</div>}
     </div>
   );
-}
+};
 
-export default Inputpanel;
+export default InputPanel;

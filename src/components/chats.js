@@ -3,6 +3,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { AuthContext } from "../context/authContext";
 import { db } from "../firebase";
 import { ChatContext } from "../context/chatContext";
+
 function Chats() {
   const [chats, setChats] = useState([]);
   const { currentUser } = useContext(AuthContext);
@@ -11,7 +12,7 @@ function Chats() {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        if (!currentUser || !currentUser.uid) return; // Ensure currentUser is available
+        if (!currentUser || !currentUser.uid) return;
 
         const docSnapshot = await doc(db, "userChats", currentUser.uid);
         const unsubscribe = onSnapshot(docSnapshot, (doc) => {
@@ -24,12 +25,11 @@ function Chats() {
         return unsubscribe;
       } catch (error) {
         console.error("Error fetching chats:", error);
-        // Handle error gracefully, e.g., display an error message
       }
     };
 
     fetchChats();
-  }, [currentUser]); // Removed currentUser.uid from dependency array since currentUser object reference changes might be important
+  }, [currentUser]);
 
   const handleSelect = (user) => {
     dispatch({ type: "CHANGE_USER", payload: user });
@@ -40,6 +40,15 @@ function Chats() {
     const date = timestamp.toDate();
     const options = { hour: "numeric", minute: "numeric", hour12: true };
     return date.toLocaleString("en-US", options);
+  };
+
+  const getLastMessageDisplay = (lastMessage) => {
+    if (!lastMessage) return "";
+    if (lastMessage.messageType === "image") {
+      return <img src={lastMessage.img} alt="Last message image" className="lastMessageImage" />;
+    }
+    if (lastMessage.messageType === "attachment") return "Attachment";
+    return lastMessage.text || "No message";
   };
 
   return (
@@ -58,7 +67,7 @@ function Chats() {
                 {chat.userInfo.displayName}
               </span>
               <div className="TimeMessage">
-                <p>{chat.lastMessage?.text}</p>
+                <div>{getLastMessageDisplay(chat.lastMessage)}</div>
                 <p className="time">{getMessageSentTime(chat.date)}</p>
               </div>
             </div>
