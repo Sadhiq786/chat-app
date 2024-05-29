@@ -8,21 +8,26 @@ import Sidebar from "./components/sidebar";
 import Chat from "./components/chat";
 import Add from "./img/avatar.png";
 import "./style.scss";
+import { FaEnvelope, FaUser, FaLock } from "react-icons/fa";
 
 // AuthContext to handle authentication state
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
 
   // Mock authentication state change handler
   auth.onAuthStateChanged((user) => {
     setCurrentUser(user);
+    setLoading(false);
+
   });
 
   return (
     <AuthContext.Provider value={{ currentUser }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
@@ -36,12 +41,24 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Register component
+//Register Component
 const Register = () => {
   const [err, setErr] = useState(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   const navigate = useNavigate();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,17 +134,38 @@ const Register = () => {
   return (
     <div className="formContainer">
       <div className="formWrapper">
-        <span className="logo">Chat App</span>
+        <span className="logo">InstantChat</span>
         <span className="title">Register</span>
         <form onSubmit={handleSubmit}>
-          <input type="text" placeholder="Display Name" required />
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
-          <input style={{ display: "none" }} className="fileInput" type="file" id="file" accept="image/*" required />
-          <label htmlFor="file">
-            <img src={Add} alt="" className="addimg" />
-            <span>Add an avatar</span>
-          </label>
+          <div className="inputContainer">
+            <FaUser className="icon" />
+            <input type="text" placeholder="Display Name" required />
+          </div>
+          <div className="inputContainer">
+            <FaEnvelope className="icon" />
+            <input type="email" placeholder="Email" required />
+          </div>
+          <div className="inputContainer">
+            <FaLock className="icon" />
+            <input type="password" placeholder="Password" required />
+          </div>
+          <div className="inputContainer">
+            <input
+              type="file"
+              id="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              required
+            />
+            {previewImage && (
+              <img src={previewImage} alt="Preview" className="previewImage" />
+            )}
+            <label htmlFor="file">
+              <img src={Add} alt="" className="adding" />
+              <span>Add an avatar</span>
+            </label>
+
+          </div>
           <button disabled={loading}>
             {loading ? "Signing up..." : "Sign up"}
           </button>
@@ -144,19 +182,21 @@ const Register = () => {
 
 // Login component
 const Login = () => {
+  const [email, setEmail] = useState("Deepika23@gmail.com");
+  const [password, setPassword] = useState("Deepika@1");
   const [err, setErr] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = e.target[0].value;
-    const password = e.target[1].value;
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
       setErr(null);
       navigate("/");
     } catch (error) {
+      console.error("Error:", error); // Log the error to the console
+
       if (error.code === "auth/user-not-found") {
         setErr("User not found. Please register.");
       } else {
@@ -168,35 +208,41 @@ const Login = () => {
   return (
     <div className="formContainer">
       <div className="formWrapper">
-        <span className="logo">Chat App</span>
+        <span className="logo">InstantChat</span>
         <span className="title">Login</span>
         <form onSubmit={handleSubmit} className="form">
-          <input type="email" placeholder="Email" required />
-          <br />
-          <input type="password" placeholder="Password" required />
-          <br />
+          <div className="inputContainer">
+            <FaEnvelope className="icon" />
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="inputContainer">
+            <FaLock className="icon" />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
           <button>Sign in</button>
           {err && <span style={{ color: "red" }}>{err}</span>}
         </form>
         <p>
           You don't have an account? <Link to="/register">Register</Link>
         </p>
-        <div className="defaultlogin">
-          <h6>Sample Login Details</h6>
-          <b>
-            <span>Email:</span>
-          </b>
-          <span> user123@gmail.com</span>
-          <br />
-          <b>
-            <span>Password:</span>
-          </b>
-          <span> 123456</span>
-        </div>
       </div>
     </div>
   );
 };
+
+
 
 // Home component
 const Home = () => {

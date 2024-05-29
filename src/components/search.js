@@ -129,7 +129,7 @@ const SearchBar = () => {
           <div className="errorContainer" onClick={handleSelect}>
             <span>
               <Icon.XCircleFill />
-            </span>
+            </span>&nbsp;&nbsp;&nbsp;&nbsp;
             <span>User not found!</span>
           </div>
         )}

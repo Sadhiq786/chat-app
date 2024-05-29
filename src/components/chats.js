@@ -67,7 +67,7 @@ function Chats() {
                 {chat.userInfo.displayName}
               </span>
               <div className="TimeMessage">
-                <div>{getLastMessageDisplay(chat.lastMessage)}</div>
+                <div className="message">{getLastMessageDisplay(chat.lastMessage)}</div>
                 <p className="time">{getMessageSentTime(chat.date)}</p>
               </div>
             </div>
