@@ -3,11 +3,15 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { AuthContext } from "../context/authContext";
 import { db } from "../firebase";
 import { ChatContext } from "../context/chatContext";
+import { PageContext } from "../context/pageContext";
+
 
 function Chats() {
   const [chats, setChats] = useState([]);
   const { currentUser } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
+  const {pageState ,handlePageChange}= useContext(PageContext)
+
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -33,6 +37,8 @@ function Chats() {
 
   const handleSelect = (user) => {
     dispatch({ type: "CHANGE_USER", payload: user });
+    handlePageChange()
+
   };
 
   const getMessageSentTime = (timestamp) => {

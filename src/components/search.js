@@ -22,12 +22,13 @@ const SearchBar = () => {
   const { currentUser } = useContext(AuthContext);
 
   const handleSearch = async () => {
-    if (!username) {
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
       setErr(true);
       return;
     }
 
-    const lowercaseUsername = username.toLowerCase();
+    const lowercaseUsername = trimmedUsername.toLowerCase();
 
     const q = query(
       collection(db, "users"),
@@ -41,68 +42,63 @@ const SearchBar = () => {
         setUser(null);
       } else {
         querySnapshot.forEach((doc) => {
+          console.log("User found:", doc.data());
           setUser(doc.data());
         });
         setErr(false);
       }
     } catch (err) {
+      console.error("Error fetching user:", err);
       setErr(true);
     }
   };
 
   const handleKey = (e) => {
-    if (e.code === "Enter") {
-      handleSearch();
-    }
+    e.code === "Enter" && handleSearch();
   };
 
   const handleSelect = async () => {
     if (err) {
       setErr(false);
       setUsername("");
+      return;
     }
-    setIsInputFocused(!err);
 
-    if (user && user.uid) {
-      const combinedId =
-        currentUser.uid > user.uid
-          ? currentUser.uid + user.uid
-          : user.uid + currentUser.uid;
+    const combinedId =
+      currentUser.uid > user.uid
+        ? currentUser.uid + user.uid
+        : user.uid + currentUser.uid;
 
-      try {
-        const chatDocRef = doc(db, "chats", combinedId);
-        const chatDoc = await getDoc(chatDocRef);
+    try {
+      const res = await getDoc(doc(db, "chats", combinedId));
 
-        if (!chatDoc.exists()) {
-          await setDoc(chatDocRef, { messages: [] });
+      if (!res.exists()) {
+        await setDoc(doc(db, "chats", combinedId), { messages: [] });
 
-          await Promise.all([
-            updateDoc(doc(db, "userChats", currentUser.uid), {
-              [combinedId + ".userInfo"]: {
-                uid: user.uid,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-              },
-              [combinedId + ".date"]: serverTimestamp(),
-            }),
-            updateDoc(doc(db, "userChats", user.uid), {
-              [combinedId + ".userInfo"]: {
-                uid: currentUser.uid,
-                displayName: currentUser.displayName,
-                photoURL: currentUser.photoURL,
-              },
-              [combinedId + ".date"]: serverTimestamp(),
-            }),
-          ]);
-        }
-      } catch (error) {
-        setErr(true);
-        console.error("Error initiating the chat:", error);
-      } finally {
-        setUser(null);
-        setUsername("");
+        await updateDoc(doc(db, "userChats", currentUser.uid), {
+          [combinedId + ".userInfo"]: {
+            uid: user.uid,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+          },
+          [combinedId + ".date"]: serverTimestamp(),
+        });
+
+        await updateDoc(doc(db, "userChats", user.uid), {
+          [combinedId + ".userInfo"]: {
+            uid: currentUser.uid,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
+          },
+          [combinedId + ".date"]: serverTimestamp(),
+        });
       }
+    } catch (err) {
+      console.error("Error initiating the chat:", err);
     }
+
+    setUser(null);
+    setUsername("");
   };
 
   return (

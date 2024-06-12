@@ -1,12 +1,16 @@
-import React, { useContext, useState, useRef } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import Img from "../img/img.png";
 import Attach from "../img/attach.png";
+import Send from "../img/send-regular-24.png";
 import { AuthContext } from "../context/authContext";
 import { ChatContext } from "../context/chatContext";
 import { v4 as uuid } from "uuid";
 import { Timestamp, arrayUnion, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { DispWidthContext } from "../context/dispWidthContex";
+import { PageContext } from "../context/pageContext";
+import { Link } from "react-router-dom";
 
 const InputPanel = () => {
   const [text, setText] = useState("");
@@ -18,6 +22,13 @@ const InputPanel = () => {
   const { data } = useContext(ChatContext);
   const fileInputRef = useRef(null);
   const attachmentInputRef = useRef(null);
+  const { displayWidth } = useContext(DispWidthContext);
+  const { pageState, handlePageChange } = useContext(PageContext);
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    // Code for any additional side effects
+  }, []);
 
   const handleSend = async () => {
     if (!text.trim() && !img && !file) {
@@ -87,6 +98,7 @@ const InputPanel = () => {
   const handleInputChange = (e) => {
     setText(e.target.value);
     if (error) setError("");
+    setIsTyping(!!e.target.value.trim());
   };
 
   const handleFileChange = (e) => {
@@ -96,6 +108,7 @@ const InputPanel = () => {
       setImg(null); // Ensure img is cleared when a file is selected
     }
     if (error) setError("");
+    setIsTyping(false);
   };
 
   const handleImageChange = (e) => {
@@ -105,6 +118,7 @@ const InputPanel = () => {
       setFile(null); // Ensure file is cleared when an image is selected
     }
     if (error) setError("");
+    setIsTyping(false);
   };
 
   return (
@@ -125,7 +139,7 @@ const InputPanel = () => {
         onChange={handleInputChange}
         value={text}
         onKeyDown={handleKeyDown}
-        disabled={uploading}
+        disabled={uploading || !!img || !!file} // Disable when uploading or img/file is selected
       />
       <div className="send">
         <input
@@ -133,7 +147,7 @@ const InputPanel = () => {
           ref={fileInputRef}
           style={{ display: "none" }}
           onChange={handleFileChange}
-          disabled={uploading}
+          disabled={uploading || isTyping}
         />
         <input
           type="file"
@@ -141,7 +155,7 @@ const InputPanel = () => {
           ref={attachmentInputRef}
           style={{ display: "none" }}
           onChange={handleImageChange}
-          disabled={uploading}
+          disabled={uploading || isTyping}
         />
         <label htmlFor="file" onClick={() => attachmentInputRef.current.click()}>
           <img src={Img} alt="Upload Image" />
@@ -150,9 +164,15 @@ const InputPanel = () => {
           <img src={Attach} alt="Upload File" />
         </label>
         {(text.trim() || img || file) && (
-          <button onClick={handleSend} disabled={uploading}>
-            {uploading ? "Sending..." : "Send"}
-          </button>
+          displayWidth <= 768 ? (
+            // If the display width is less than or equal to 900px (mobile/tablet view)
+            <img src={Send} className="send-icon" onClick={handleSend} />
+          ) : (
+            // If the display width is greater than 900px (desktop view)
+            <button onClick={handleSend} disabled={uploading}>
+              {uploading ? "Sending..." : "Send"}
+            </button>
+          )
         )}
       </div>
       {error && <div className="error">{error}</div>}

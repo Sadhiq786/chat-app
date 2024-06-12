@@ -18,14 +18,15 @@ function NavBar() {
 
   return (
     <div className="navbar">
-      <span className="logo">InstantChat</span>
+      <span className="logo">Connectify</span>
       <div className="user">
         <img src={currentUser.photoURL} alt="User" />
-        <span>{currentUser.displayName}</span>
         <div className={`dropdown ${dropdownOpen ? "open" : ""}`}>
           <FaEllipsisV className="dropdown-icon" onClick={toggleDropdown} />
           <div className="dropdown-menu">
             <button onClick={handleLogout}>Log out</button>
+            <span>{currentUser.displayName}</span>
+
           </div>
         </div>
       </div>

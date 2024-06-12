@@ -1,19 +1,20 @@
-import React, { useContext } from "react";
-import Cam from "../img/videocam.png";
-import Add from "../img/person.png";
-import More from "../img/more.png";
-import { FaArrowLeft } from "react-icons/fa"; // Import the back icon
+import React, { useContext, useState } from "react";
+import { FaArrowLeft, FaEllipsisV } from "react-icons/fa";
 import Messages from "./messages";
 import Input from "./input";
-import { Dropdown } from "react-bootstrap";
 import { ChatContext } from "../context/chatContext";
 import { AuthContext } from "../context/authContext";
 import { updateDoc, deleteField, doc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+import { DispWidthContext } from '../context/dispWidthContex';
+import { PageContext } from '../context/pageContext';
 
 const Chat = () => {
-  const { data, dispatch } = useContext(ChatContext);
+  const { data } = useContext(ChatContext);
   const { currentUser } = useContext(AuthContext);
+  const { displayWidth } = useContext(DispWidthContext);
+  const { handlePageChange } = useContext(PageContext);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleClearChat = async () => {
     try {
@@ -38,37 +39,25 @@ const Chat = () => {
     }
   };
 
-  const handleBack = () => {
-    // Reset the chat state to clear the chat ID and user data
-    dispatch({ type: "DELETE_CHAT" });
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
   };
 
   return (
     <div className="chat">
       <div className="chatInfo">
-        <div className="backIcon" onClick={handleBack}>
-          <FaArrowLeft />
-        </div>
-        <div className="chatIcon">
-          {data.user.photoURL && (
-            <img src={data.user.photoURL} alt="User" className="userImage" />
-          )}
-          {data.user?.displayName}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {displayWidth < 499 && <FaArrowLeft className='arrow' onClick={handlePageChange} />}
+          <img src={data.user?.photoURL} alt="" />
+          <span>{data.user?.displayName}</span>
         </div>
         <div className="chatIcons">
-          <img src={Cam} alt="" />
-          <img src={Add} alt="" />
-          <Dropdown data-bs-theme="dark">
-            <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-              <img src={More} alt="" />
-            </Dropdown.Toggle>
-
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={handleClearChat}>
-                Clear chat
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+          <FaEllipsisV className="dropdown-icon" onClick={toggleDropdown} />
+          {dropdownOpen && (
+            <div className="dropdown-menu">
+              <button onClick={handleClearChat}>Clear chat</button>
+            </div>
+          )}
         </div>
       </div>
       <Messages />
