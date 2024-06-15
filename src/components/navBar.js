@@ -24,9 +24,8 @@ function NavBar() {
         <div className={`dropdown ${dropdownOpen ? "open" : ""}`}>
           <FaEllipsisV className="dropdown-icon" onClick={toggleDropdown} />
           <div className="dropdown-menu">
-            <button onClick={handleLogout}>Log out</button>
             <span>{currentUser.displayName}</span>
-
+            <button onClick={handleLogout}>Log out</button>
           </div>
         </div>
       </div>
