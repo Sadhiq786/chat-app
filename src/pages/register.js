@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db, storage } from "../firebase";
@@ -6,13 +6,16 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
 import Add from "../img/avatar.png";
 import { FaEnvelope, FaUser, FaLock } from "react-icons/fa";
+import { DispWidthContext } from "../context/dispWidthContex";
 
 const Register = () => {
   const [err, setErr] = useState(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [imageUploaded, setImageUploaded] = useState(false);
   const navigate = useNavigate();
+  const { displayWidth } = useContext(DispWidthContext);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -20,6 +23,7 @@ const Register = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
+        setImageUploaded(true); // Set imageUploaded to true
       };
       reader.readAsDataURL(file);
     }
@@ -86,6 +90,7 @@ const Register = () => {
             e.target.reset();
             setSuccess(true);
             setLoading(false);
+            setImageUploaded(false); // Reset imageUploaded state after successful registration
             navigate("/");
           } catch (error) {
             setLoading(false);
@@ -101,8 +106,8 @@ const Register = () => {
 
   return (
     <div className="formContainer">
-      <div className="formWrapper">
-        <span className="logo">Connectify</span>
+      <div className="formWrapper"> {/* make changes here*/}
+        <span className="logo">Let's Connect</span>
         <span className="title">Register</span>
         <form onSubmit={handleSubmit}>
           <div className="inputContainer">
@@ -128,19 +133,19 @@ const Register = () => {
             {previewImage && (
               <img src={previewImage} alt="Preview" className="previewImage" />
             )}
-            <label htmlFor="file">
-              <img src={Add} alt="" className="adding" />
-              <span>Add an avatar</span>
+            <label htmlFor="file" className={imageUploaded ? "disabled" : ""}>
+              {imageUploaded? null: <img src={Add} alt="" className="adding" />}
+              <span style={{fontSize:"17px"}}>{imageUploaded ? <span style={{fontSize:"17px", fontWeight:"bold"}}>&nbsp; Updated profile picture</span>: "Add profile picture"}</span>
             </label>
           </div>
-          <button disabled={loading}>
+          <button disabled={loading} className="bn632-hover bn26">
             {loading ? "Signing up..." : "Sign up"}
           </button>
           {err && <span style={{ color: "red" }}>{err}</span>}
           {success && <span style={{ color: "green" }}>Registration successful!</span>}
         </form>
-        <p>
-          You already have an account? <Link to="/login">Login</Link>
+        <p style={{fontSize:"18px"}}>
+          You already have an account? <Link to="/login" style={{color:"#21b4e5"}}>Login</Link>
         </p>
       </div>
     </div>

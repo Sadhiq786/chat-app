@@ -4,14 +4,16 @@ import { AuthContext } from "../context/authContext";
 import { db } from "../firebase";
 import { ChatContext } from "../context/chatContext";
 import { PageContext } from "../context/pageContext";
-
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 function Chats() {
   const [chats, setChats] = useState([]);
   const { currentUser } = useContext(AuthContext);
   const { dispatch } = useContext(ChatContext);
-  const {pageState ,handlePageChange}= useContext(PageContext)
-
+  const { pageState, handlePageChange } = useContext(PageContext);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSlides, setLightboxSlides] = useState([]);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -37,8 +39,12 @@ function Chats() {
 
   const handleSelect = (user) => {
     dispatch({ type: "CHANGE_USER", payload: user });
-    handlePageChange()
+    handlePageChange();
+  };
 
+  const handleImageClick = (src) => {
+    setLightboxSlides([{ src }]);
+    setLightboxOpen(true);
   };
 
   const getMessageSentTime = (timestamp) => {
@@ -53,7 +59,7 @@ function Chats() {
     if (lastMessage.messageType === "image") {
       return <img src={lastMessage.img} alt="Last message image" className="lastMessageImage" />;
     }
-    if (lastMessage.messageType === "attachment") return "Attachment";
+    if (lastMessage.messageType === "attachment") return "Photo";
     return lastMessage.text || "No message";
   };
 
@@ -67,7 +73,15 @@ function Chats() {
             key={key}
             onClick={() => handleSelect(chat.userInfo)}
           >
-            <img src={chat.userInfo.photoURL} alt="User Avatar" />
+            <img
+              src={chat.userInfo.photoURL}
+              alt="User Avatar"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleImageClick(chat.userInfo.photoURL);
+              }}
+              style={{ cursor: "pointer" }}
+            />
             <div className="userChatInfo">
               <span style={{ fontSize: "18px", fontWeight: "500" }}>
                 {chat.userInfo.displayName}
@@ -79,6 +93,11 @@ function Chats() {
             </div>
           </div>
         ))}
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={lightboxSlides}
+      />
     </div>
   );
 }

@@ -10,11 +10,15 @@ import { db, storage } from "../firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { DispWidthContext } from "../context/dispWidthContex";
 import { PageContext } from "../context/pageContext";
+import InputEmoji from "react-input-emoji";
+import * as Icon from 'react-bootstrap-icons';
 import { Link } from "react-router-dom";
+import pica from 'pica';
 
 const InputPanel = () => {
   const [text, setText] = useState("");
   const [img, setImg] = useState(null);
+  const [imgPreview, setImgPreview] = useState(null);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -26,13 +30,9 @@ const InputPanel = () => {
   const { pageState, handlePageChange } = useContext(PageContext);
   const [isTyping, setIsTyping] = useState(false);
 
-  useEffect(() => {
-    // Code for any additional side effects
-  }, []);
-
   const handleSend = async () => {
     if (!text.trim() && !img && !file) {
-      setError("Cannot send empty messages");
+      alert("Cannot send empty messages");
       return;
     }
 
@@ -49,8 +49,9 @@ const InputPanel = () => {
     let uploadPromise = Promise.resolve();
 
     if (img) {
+      const resizedImage = await resizeImageWithPica(img); // Resize image before uploading
       const storageRef = ref(storage, `images/${uuid()}`);
-      uploadPromise = uploadBytesResumable(storageRef, img).then(snapshot =>
+      uploadPromise = uploadBytesResumable(storageRef, resizedImage).then(snapshot =>
         getDownloadURL(snapshot.ref).then(downloadURL => {
           newMessage.img = downloadURL;
         })
@@ -72,7 +73,7 @@ const InputPanel = () => {
 
       const updateUserChat = async (userId) => {
         await updateDoc(doc(db, "userChats", userId), {
-          [`${data.chatId}.lastMessage`]: { text: newMessage.text || "Attachment" },
+          [`${data.chatId}.lastMessage`]: { text: newMessage.text || "Photo" },
           [`${data.chatId}.date`]: serverTimestamp(),
         });
       };
@@ -81,11 +82,12 @@ const InputPanel = () => {
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
-      setText("");
       setImg(null);
+      setImgPreview(null); // Clear image preview after sending
       setFile(null);
       setUploading(false);
     }
+    setText("");
   };
 
   const handleKeyDown = (e) => {
@@ -106,26 +108,80 @@ const InputPanel = () => {
     if (file) {
       setFile(file);
       setImg(null); // Ensure img is cleared when a file is selected
+      setImgPreview(null); // Ensure image preview is cleared when a file is selected
     }
     if (error) setError("");
     setIsTyping(false);
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       setImg(file);
+      setImgPreview(URL.createObjectURL(file)); // Display image preview
       setFile(null); // Ensure file is cleared when an image is selected
     }
     if (error) setError("");
     setIsTyping(false);
   };
 
+  const resizeImageWithPica = (file, maxWidth = 800, maxHeight = 800) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+
+      reader.readAsDataURL(file);
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const picaInstance = pica();
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        picaInstance.resize(canvas, canvas)
+          .then((result) => picaInstance.toBlob(result, file.type, 0.90))
+          .then((blob) => {
+            resolve(new File([blob], file.name, { type: file.type }));
+          })
+          .catch((error) => reject(error));
+      };
+
+      img.onerror = (error) => reject(error);
+    });
+  };
+
   return (
     <div className="input">
-      {img && (
-        <div className="preview">
-          <img src={URL.createObjectURL(img)} alt="Image Preview" />
+      {imgPreview && (
+        <div className="preview" 
+            style={{ width: displayWidth <=768?'30px':"30px", 
+                     height: displayWidth <=768?'30px':"30px", 
+                     overflow: 'hidden', 
+                     position:"absolute", 
+                     top: displayWidth <=768?'93.5%':"94%", 
+                     zIndex:"1000", 
+                     left: displayWidth <=768?'8%':"5%" }}>
+          <img src={imgPreview} alt="Image Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
       )}
       {file && (
@@ -133,13 +189,14 @@ const InputPanel = () => {
           <p>{file.name}</p>
         </div>
       )}
-      <input
-        type="text"
-        placeholder="Type something..."
-        onChange={handleInputChange}
+      <InputEmoji
         value={text}
+        onChange={setText}
+        cleanOnEnter
+        placeholder="Type a message..."
         onKeyDown={handleKeyDown}
-        disabled={uploading || !!img || !!file} // Disable when uploading or img/file is selected
+        disabled={uploading || !!img || !!file}
+        maxLength={displayWidth <= 768 ? 30 : 99}
       />
       <div className="send">
         <input
@@ -157,21 +214,19 @@ const InputPanel = () => {
           onChange={handleImageChange}
           disabled={uploading || isTyping}
         />
-        <label htmlFor="file" onClick={() => attachmentInputRef.current.click()}>
-          <img src={Img} alt="Upload Image" />
+        <label htmlFor="file">
+          <img src={Attach} alt="Upload File" onClick={() => attachmentInputRef.current.click()} />
         </label>
-        <label htmlFor="file" onClick={() => fileInputRef.current.click()}>
-          <img src={Attach} alt="Upload File" />
-        </label>
+
         {(text.trim() || img || file) && (
           displayWidth <= 768 ? (
-            // If the display width is less than or equal to 900px (mobile/tablet view)
+            // If the display width is less than or equal to 768px (mobile/tablet view)
             <img src={Send} className="send-icon" onClick={handleSend} />
           ) : (
-            // If the display width is greater than 900px (desktop view)
-            <button onClick={handleSend} disabled={uploading}>
-              {uploading ? "Sending..." : "Send"}
-            </button>
+            // If the display width is greater than 768px (desktop view)
+            <label>
+              <Icon.SendFill onClick={handleSend} style={{ rotate: "45deg" }} />
+            </label>
           )
         )}
       </div>

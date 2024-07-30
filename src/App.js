@@ -4,7 +4,7 @@ import { AuthContextProvider, AuthContext } from "./context/authContext";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/register";
-import "./style.scss";
+import "./style.css";
 // ProtectedRoute component to protect routes
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useContext(AuthContext);

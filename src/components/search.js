@@ -107,13 +107,14 @@ const SearchBar = () => {
         {!err ? (
           <>
             <input
-              type="text"
+              type="search"
               placeholder="Search or Find a user"
               onChange={(e) => setUsername(e.target.value)}
               onKeyDown={handleKey}
               onFocus={() => setIsInputFocused(true)}
               onBlur={() => setIsInputFocused(false)}
               value={username}
+              alt="Type Name and Press Enter"
             />
             {!isInputFocused && (
               <span>

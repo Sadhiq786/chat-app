@@ -5,8 +5,8 @@ import { auth } from "../firebase";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 
 const Login = () => {
-  const [email, setEmail] = useState("Deepika23@gmail.com");
-  const [password, setPassword] = useState("Deepika@1");
+  const [email, setEmail] = useState("sadhiq@gmail.com");
+  const [password, setPassword] = useState("786000");
   const [err, setErr] = useState(null);
   const navigate = useNavigate();
 
@@ -33,7 +33,7 @@ const Login = () => {
   return (
     <div className="formContainer">
       <div className="formWrapper">
-        <span className="logo">Connectify</span>
+        <span className="logo">Let's Connect</span>
         <span className="title">Login</span>
         <form onSubmit={handleSubmit} className="form">
           <div className="inputContainer">
@@ -56,11 +56,11 @@ const Login = () => {
               required
             />
           </div>
-          <button>Sign in</button>
+          <button className="bn632-hover bn26">Sign in</button>
           {err && <span style={{ color: "red" }}>{err}</span>}
         </form>
-        <p>
-          You don't have an account? <Link to="/register">Register</Link>
+        <p style={{fontSize:"18px"}}>
+          You don't have an account? <Link to="/register" style={{color:"#21b4e5"}}>Register</Link>
         </p>
       </div>
     </div>

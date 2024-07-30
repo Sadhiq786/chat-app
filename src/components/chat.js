@@ -8,6 +8,8 @@ import { updateDoc, deleteField, doc, serverTimestamp } from "firebase/firestore
 import { db } from "../firebase";
 import { DispWidthContext } from '../context/dispWidthContex';
 import { PageContext } from '../context/pageContext';
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
 
 const Chat = () => {
   const { data } = useContext(ChatContext);
@@ -15,6 +17,8 @@ const Chat = () => {
   const { displayWidth } = useContext(DispWidthContext);
   const { handlePageChange } = useContext(PageContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSlides, setLightboxSlides] = useState([]);
 
   const handleClearChat = async () => {
     try {
@@ -34,6 +38,7 @@ const Chat = () => {
       });
 
       console.log("Chat cleared successfully!");
+      setDropdownOpen(false);
     } catch (error) {
       console.error("Error clearing chat:", error);
     }
@@ -43,13 +48,23 @@ const Chat = () => {
     setDropdownOpen(!dropdownOpen);
   };
 
+  const openLightbox = (src) => {
+    setLightboxSlides([{ src }]);
+    setLightboxOpen(true);
+  };
+
   return (
     <div className="chat">
       <div className="chatInfo">
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {displayWidth < 499 && <FaArrowLeft className='arrow' onClick={handlePageChange} />}
-          <img src={data.user?.photoURL} alt="" />
-          <span>{data.user?.displayName}</span>
+          <img
+            src={data.user?.photoURL}
+            alt=""
+            onClick={() => openLightbox(data.user?.photoURL)}
+            style={{ cursor: "pointer" }}
+          />
+          <span style={{ textAlign: "center" }}>{data.user?.displayName}</span>
         </div>
         <div className="chatIcons">
           <FaEllipsisV className="dropdown-icon" onClick={toggleDropdown} />
@@ -62,6 +77,11 @@ const Chat = () => {
       </div>
       <Messages />
       <Input />
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={lightboxSlides}
+      />
     </div>
   );
 };
